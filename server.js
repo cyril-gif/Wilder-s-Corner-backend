@@ -32,10 +32,14 @@ app.use(helmet()); // Sets various HTTP headers for security
 
 // CORS configuration - allow only frontend origin with credentials
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true, // Allow cookies to be sent
-  optionsSuccessStatus: 200
+  origin: [
+    'http://localhost:3000',
+    'https://wilder-s-corner-frontend.vercel.app',
+    'https://your-custom-domain.com' // if you add one
+  ],
+  credentials: true,
 }));
+
 
 // Logging in development
 if (process.env.NODE_ENV === 'development') {
