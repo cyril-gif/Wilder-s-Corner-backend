@@ -77,7 +77,7 @@ app.use('/api/admin', adminRoutes);
 
 // 404 handler for undefined routes
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` });
+  res.status(404).json({ success: false, message: `Route ₵{req.originalUrl} not found` });
 });
 
 // Global error handler (must be last)

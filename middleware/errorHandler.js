@@ -10,7 +10,7 @@ const errorHandler = (err, req, res, next) => {
   if (err.code === 11000) {
     statusCode = 400;
     const field = Object.keys(err.keyPattern)[0];
-    message = `${field} already exists. Please use another value.`;
+    message = `₵{field} already exists. Please use another value.`;
   }
   
   // Handle Mongoose validation error

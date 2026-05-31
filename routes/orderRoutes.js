@@ -3,17 +3,16 @@ import {
   createOrder,
   getMyOrders,
   getOrderById,
-  updateOrderToPaid
+  updateOrderToPaid,
 } from '../controllers/orderController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { orderValidation } from '../validations/orderValidation.js';
 
 const router = express.Router();
 
-router.post('/', protect, orderValidation, createOrder);
-router.get('/my-orders', protect, getMyOrders);
-router.get('/:id', protect, getOrderById);
-router.put('/:id/pay', protect, updateOrderToPaid);
+router.route('/').post(protect, orderValidation, createOrder);
+router.route('/my-orders').get(protect, getMyOrders);
+router.route('/:id').get(protect, getOrderById);
+router.route('/:id/pay').put(protect, updateOrderToPaid);
 
 export default router;
-
