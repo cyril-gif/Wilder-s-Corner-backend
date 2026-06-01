@@ -2,14 +2,32 @@ import User from '../models/User.js';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/generateToken.js';
 import { validationResult } from 'express-validator';
 
-/**
- * @desc    Register a new user
- * @route   POST /api/auth/register
- * @access  Public
- */
+// Helper function to set cookies (works for both local and production)
+const setAuthCookies = (res, accessToken, refreshToken) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // Access token cookie (15 minutes)
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: isProduction,      // true on HTTPS (Render/Vercel), false on localhost
+    sameSite: isProduction ? 'none' : 'lax',  // 'none' required for cross-domain
+    maxAge: 15 * 60 * 1000,
+  });
+  
+  // Refresh token cookie (7 days)
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+};
+
+// @desc    Register a new user
+// @route   POST /api/auth/register
+// @access  Public
 export const register = async (req, res) => {
   try {
-    // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, message: errors.array()[0].msg });
@@ -17,42 +35,20 @@ export const register = async (req, res) => {
     
     const { name, email, password, phone } = req.body;
     
-    // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ success: false, message: 'User already exists with this email' });
     }
     
-    // Create user
-    const user = await User.create({
-      name,
-      email,
-      password,
-      phone
-    });
+    const user = await User.create({ name, email, password, phone });
     
-    // Generate tokens
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
     
-    // Save refresh token in database
     user.refreshToken = refreshToken;
     await user.save();
     
-    // Set cookies (httpOnly for security)
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes
-    });
-    
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
+    setAuthCookies(res, accessToken, refreshToken);
     
     res.status(201).json({
       success: true,
@@ -61,8 +57,8 @@ export const register = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -70,11 +66,9 @@ export const register = async (req, res) => {
   }
 };
 
-/**
- * @desc    Login user
- * @route   POST /api/auth/login
- * @access  Public
- */
+// @desc    Login user
+// @route   POST /api/auth/login
+// @access  Public
 export const login = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -94,27 +88,13 @@ export const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
     
-    // Generate tokens
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
     
     user.refreshToken = refreshToken;
     await user.save();
     
-    // Set cookies
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000
-    });
-    
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    setAuthCookies(res, accessToken, refreshToken);
     
     res.json({
       success: true,
@@ -123,8 +103,8 @@ export const login = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -132,14 +112,11 @@ export const login = async (req, res) => {
   }
 };
 
-/**
- * @desc    Logout user - clear cookies
- * @route   POST /api/auth/logout
- * @access  Private
- */
+// @desc    Logout user
+// @route   POST /api/auth/logout
+// @access  Private
 export const logout = async (req, res) => {
   try {
-    // Clear refresh token from database
     if (req.user) {
       const user = await User.findById(req.user._id);
       if (user) {
@@ -152,12 +129,12 @@ export const logout = async (req, res) => {
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
     
     res.json({ success: true, message: 'Logged out successfully' });
@@ -167,11 +144,9 @@ export const logout = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get current logged in user
- * @route   GET /api/auth/me
- * @access  Private
- */
+// @desc    Get current logged in user
+// @route   GET /api/auth/me
+// @access  Private
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password -refreshToken');
@@ -182,11 +157,9 @@ export const getMe = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update user profile
- * @route   PUT /api/auth/update-profile
- * @access  Private
- */
+// @desc    Update user profile
+// @route   PUT /api/auth/update-profile
+// @access  Private
 export const updateProfile = async (req, res) => {
   try {
     const { name, phone } = req.body;
@@ -205,8 +178,8 @@ export const updateProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error) {
     console.error('Update profile error:', error);
@@ -214,11 +187,9 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-/**
- * @desc    Change password
- * @route   PUT /api/auth/change-password
- * @access  Private
- */
+// @desc    Change password
+// @route   PUT /api/auth/change-password
+// @access  Private
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -239,9 +210,6 @@ export const changePassword = async (req, res) => {
     }
     
     user.password = newPassword;
-    await user.save();
-    
-    // Clear refresh token and cookies to force re-login
     user.refreshToken = null;
     await user.save();
     
@@ -255,11 +223,9 @@ export const changePassword = async (req, res) => {
   }
 };
 
-/**
- * @desc    Refresh access token using refresh token
- * @route   POST /api/auth/refresh-token
- * @access  Public (with refresh token cookie)
- */
+// @desc    Refresh access token
+// @route   POST /api/auth/refresh-token
+// @access  Public (with refresh token cookie)
 export const refreshToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
@@ -278,16 +244,14 @@ export const refreshToken = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid refresh token' });
     }
     
-    // Generate new access token
     const newAccessToken = generateAccessToken(user._id);
     
-    res.cookie('accessToken', accessToken, {
-  httpOnly: true,
-  secure: true,           // Must be true on HTTPS (Vercel/Render use HTTPS)
-  sameSite: 'none',       // Required for cross-site requests (Vercel → Render)
-  maxAge: 15 * 60 * 1000,
-});
-
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 15 * 60 * 1000,
+    });
     
     res.json({ success: true, message: 'Token refreshed' });
   } catch (error) {
@@ -295,4 +259,3 @@ export const refreshToken = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
-
