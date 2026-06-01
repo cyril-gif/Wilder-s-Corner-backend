@@ -281,12 +281,13 @@ export const refreshToken = async (req, res) => {
     // Generate new access token
     const newAccessToken = generateAccessToken(user._id);
     
-    res.cookie('accessToken', newAccessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000
-    });
+    res.cookie('accessToken', accessToken, {
+  httpOnly: true,
+  secure: true,           // Must be true on HTTPS (Vercel/Render use HTTPS)
+  sameSite: 'none',       // Required for cross-site requests (Vercel → Render)
+  maxAge: 15 * 60 * 1000,
+});
+
     
     res.json({ success: true, message: 'Token refreshed' });
   } catch (error) {

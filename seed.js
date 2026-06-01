@@ -2,9 +2,11 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Product from './models/Product.js';
 import Category from './models/Category.js';
+import User from './models/User.js';
 
 dotenv.config();
 
+// Categories
 const categories = [
   { name: "Shoes", slug: "shoes", isActive: true },
   { name: "Belts", slug: "belts", isActive: true },
@@ -13,49 +15,49 @@ const categories = [
   { name: "Bags", slug: "bags", isActive: true },
 ];
 
-// Fallback placeholder image (always works)
-const PLACEHOLDER_IMG = "https://picsum.photos/500/500?random=";
-
+// Products Array - 30+ products across all categories
 const products = [
-  // ========== SHOES ==========
+  // ========== SHOES (8 products) ==========
   {
     name: "Nike Air Max 270",
     slug: "nike-air-max-270",
-    description: "Breathable mesh upper with iconic Air Max heel unit for all-day comfort.",
+    description: "Breathable mesh upper with iconic Air Max heel unit for all-day comfort. Perfect for running and casual wear.",
     price: 149.99,
     discountPrice: 119.99,
-    images: [`${PLACEHOLDER_IMG}1`],
+    images: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500"],
     categoryName: "Shoes",
     brand: "Nike",
     stock: 45,
-    attributes: { size: ["US 7", "US 8", "US 9", "US 10"], color: ["Black", "White"] },
+    tags: ["shoes", "sport", "nike", "running"],
+    attributes: { size: ["US 7", "US 8", "US 9", "US 10", "US 11"], color: ["Black", "White", "Red"] },
     isFeatured: true,
   },
   {
     name: "Adidas Ultraboost 22",
     slug: "adidas-ultraboost-22",
-    description: "Responsive Boost midsole and Primeknit upper for energy return.",
+    description: "Responsive Boost midsole and Primeknit upper for energy return and a snug fit. Ultimate running comfort.",
     price: 179.99,
     discountPrice: null,
-    images: [`${PLACEHOLDER_IMG}2`],
+    images: ["https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=500"],
     categoryName: "Shoes",
     brand: "Adidas",
     stock: 30,
-    attributes: { size: ["US 7", "US 8", "US 9", "US 10"], color: ["Grey", "Blue"] },
+    attributes: { size: ["US 7", "US 8", "US 9", "US 10"], color: ["Grey", "Blue", "White"] },
     isFeatured: true,
   },
   {
     name: "Leather Formal Shoes",
     slug: "leather-formal-shoes",
-    description: "Genuine leather upper with cushioned insole, perfect for office wear.",
+    description: "Genuine leather upper with cushioned insole, perfect for office wear and formal events.",
     price: 89.99,
     discountPrice: 69.99,
-    images: [`${PLACEHOLDER_IMG}3`],
+    images: ["https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=500"],
     categoryName: "Shoes",
     brand: "Bata",
     stock: 60,
     attributes: { size: ["US 7", "US 8", "US 9", "US 10", "US 11"], color: ["Black", "Brown"] },
     isFlashSale: true,
+    flashSaleEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   },
   {
     name: "Puma RS-X Sneakers",
@@ -63,11 +65,24 @@ const products = [
     description: "Chunky silhouette with mesh and suede upper, modern retro style.",
     price: 119.99,
     discountPrice: 99.99,
-    images: [`${PLACEHOLDER_IMG}4`],
+    images: ["https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=500"],
     categoryName: "Shoes",
     brand: "Puma",
     stock: 25,
     attributes: { size: ["US 6", "US 7", "US 8", "US 9", "US 10"], color: ["White", "Black"] },
+    isFlashSale: true,
+  },
+  {
+    name: "New Balance 574",
+    slug: "new-balance-574",
+    description: "Classic retro running shoes with ENCAP cushioning for all-day support.",
+    price: 84.99,
+    discountPrice: 74.99,
+    images: ["https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500"],
+    categoryName: "Shoes",
+    brand: "New Balance",
+    stock: 40,
+    attributes: { size: ["US 7", "US 8", "US 9", "US 10"], color: ["Grey", "Navy", "Red"] },
   },
   {
     name: "Converse Chuck Taylor",
@@ -75,11 +90,12 @@ const products = [
     description: "Iconic high-top canvas sneakers, timeless style for everyday wear.",
     price: 59.99,
     discountPrice: 49.99,
-    images: [`${PLACEHOLDER_IMG}5`],
+    images: ["https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=500"],
     categoryName: "Shoes",
     brand: "Converse",
     stock: 80,
-    attributes: { size: ["US 5", "US 6", "US 7", "US 8", "US 9", "US 10"], color: ["Black", "White"] },
+    attributes: { size: ["US 5", "US 6", "US 7", "US 8", "US 9", "US 10"], color: ["Black", "White", "Red"] },
+    isFeatured: true,
   },
   {
     name: "Vans Old Skool",
@@ -87,20 +103,34 @@ const products = [
     description: "Classic skate shoe with side stripe, durable suede and canvas upper.",
     price: 64.99,
     discountPrice: null,
-    images: [`${PLACEHOLDER_IMG}6`],
+    images: ["https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=500"],
     categoryName: "Shoes",
     brand: "Vans",
     stock: 55,
-    attributes: { size: ["US 6", "US 7", "US 8", "US 9", "US 10"], color: ["Black", "White"] },
+    attributes: { size: ["US 6", "US 7", "US 8", "US 9", "US 10"], color: ["Black", "White", "Navy"] },
   },
-  // ========== BELTS ==========
+  {
+    name: "Crocs Classic Clogs",
+    slug: "crocs-classic-clogs",
+    description: "Lightweight, comfortable clogs with ventilation and pivoting heel strap.",
+    price: 39.99,
+    discountPrice: 29.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e8ac?w=500"],
+    categoryName: "Shoes",
+    brand: "Crocs",
+    stock: 100,
+    attributes: { size: ["M4", "M5", "M6", "M7", "M8", "M9"], color: ["Black", "Navy", "Lime"] },
+    isFlashSale: true,
+  },
+
+  // ========== BELTS (6 products) ==========
   {
     name: "Genuine Leather Belt",
     slug: "genuine-leather-belt",
-    description: "Full-grain leather belt with polished buckle, durable and stylish.",
+    description: "Full-grain leather belt with polished buckle, durable and stylish for formal wear.",
     price: 29.99,
     discountPrice: 19.99,
-    images: [`${PLACEHOLDER_IMG}7`],
+    images: ["https://images.unsplash.com/photo-1624222247344-550fb6d2c9e6?w=500"],
     categoryName: "Belts",
     brand: "Tommy Hilfiger",
     stock: 100,
@@ -110,24 +140,74 @@ const products = [
   {
     name: "Canvas Web Belt",
     slug: "canvas-web-belt",
-    description: "Casual canvas belt with metal buckle, adjustable fit.",
+    description: "Casual canvas belt with metal buckle, adjustable fit for everyday wear.",
     price: 14.99,
     discountPrice: 9.99,
-    images: [`${PLACEHOLDER_IMG}8`],
+    images: ["https://images.unsplash.com/photo-1622239054989-d2b6e3ee6b5f?w=500"],
     categoryName: "Belts",
     brand: "Levi's",
     stock: 200,
     attributes: { size: ["One Size"], color: ["Khaki", "Navy", "Black"] },
     isFlashSale: true,
   },
-  // ========== HAIR CREAMS ==========
+  {
+    name: "Italian Leather Dress Belt",
+    slug: "italian-leather-dress-belt",
+    description: "Premium Italian leather with sleek buckle, elegant for suits and formal attire.",
+    price: 49.99,
+    discountPrice: 39.99,
+    images: ["https://images.unsplash.com/photo-1622479587349-166c48f23dfd?w=500"],
+    categoryName: "Belts",
+    brand: "Gucci",
+    stock: 35,
+    attributes: { size: ["M", "L", "XL"], color: ["Black", "Brown", "Tan"] },
+  },
+  {
+    name: "Reversible Leather Belt",
+    slug: "reversible-leather-belt",
+    description: "2-in-1 reversible belt, black on one side, brown on the other.",
+    price: 34.99,
+    discountPrice: 24.99,
+    images: ["https://images.unsplash.com/photo-1552611053-33f04de542de?w=500"],
+    categoryName: "Belts",
+    brand: "Kenneth Cole",
+    stock: 75,
+    attributes: { size: ["S", "M", "L", "XL"], color: ["Black/Brown"] },
+  },
+  {
+    name: "Braided Leather Belt",
+    slug: "braided-leather-belt",
+    description: "Stylish braided design, perfect for casual and smart-casual outfits.",
+    price: 39.99,
+    discountPrice: 29.99,
+    images: ["https://images.unsplash.com/photo-1630428113465-05c1cb16f12a?w=500"],
+    categoryName: "Belts",
+    brand: "Fossil",
+    stock: 50,
+    attributes: { size: ["M", "L", "XL"], color: ["Brown", "Tan"] },
+  },
+  {
+    name: "Military Web Belt",
+    slug: "military-web-belt",
+    description: "Durable nylon web belt with quick-release buckle, ideal for outdoor activities.",
+    price: 12.99,
+    discountPrice: 8.99,
+    images: ["https://images.unsplash.com/photo-1581178551539-41ef5c100895?w=500"],
+    categoryName: "Belts",
+    brand: "Under Armour",
+    stock: 150,
+    attributes: { size: ["One Size"], color: ["Olive", "Black", "Tan"] },
+    isFlashSale: true,
+  },
+
+  // ========== HAIR CREAMS (6 products) ==========
   {
     name: "Shea Moisture Curl Enhancing Smoothie",
     slug: "shea-moisture-curl-smoothie",
-    description: "Hydrates and defines curls, reduces frizz, no sulfates.",
+    description: "Hydrates and defines curls, reduces frizz, no sulfates, safe for natural hair.",
     price: 12.99,
     discountPrice: 9.99,
-    images: [`${PLACEHOLDER_IMG}9`],
+    images: ["https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=500"],
     categoryName: "Hair Creams",
     brand: "Shea Moisture",
     stock: 80,
@@ -137,123 +217,287 @@ const products = [
   {
     name: "Cantu Shea Butter Leave-In Cream",
     slug: "cantu-leave-in-cream",
-    description: "Moisturizes and restores natural hair, reduces breakage.",
+    description: "Moisturizes and restores natural hair, reduces breakage and split ends.",
     price: 7.99,
     discountPrice: 5.99,
-    images: [`${PLACEHOLDER_IMG}10`],
+    images: ["https://images.unsplash.com/photo-1596462502278-27e2e2b0e7f8?w=500"],
     categoryName: "Hair Creams",
     brand: "Cantu",
     stock: 150,
-    attributes: { size: ["16oz"], material: "Shea Butter" },
+    attributes: { size: ["16oz"], material: "Shea Butter, Coconut Oil" },
+    isFlashSale: true,
   },
-  // ========== JEWELLERY ==========
+  {
+    name: "Olaplex No.6 Bond Smoother",
+    slug: "olaplex-bond-smoother",
+    description: "Repairing leave-in styling cream that smooths, hydrates, and strengthens hair.",
+    price: 28.99,
+    discountPrice: 24.99,
+    images: ["https://images.unsplash.com/photo-1631730359585-38a4935cbec4?w=500"],
+    categoryName: "Hair Creams",
+    brand: "Olaplex",
+    stock: 40,
+    attributes: { size: ["3.3oz"], material: "Bis-Aminopropyl Diglycol Dimaleate" },
+  },
+  {
+    name: "Mielle Organics Rosemary Mint Hair Cream",
+    slug: "mielle-rosemary-mint-cream",
+    description: "Strengthening hair cream with rosemary and mint, promotes healthy growth.",
+    price: 9.99,
+    discountPrice: 7.99,
+    images: ["https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=500"],
+    categoryName: "Hair Creams",
+    brand: "Mielle Organics",
+    stock: 90,
+    attributes: { size: ["8oz"], material: "Rosemary Oil, Mint Oil, Biotin" },
+  },
+  {
+    name: "Carol's Daughter Black Vanilla Leave-In",
+    slug: "carols-daughter-black-vanilla",
+    description: "Hydrating leave-in conditioner with sweet vanilla scent, softens and detangles.",
+    price: 11.99,
+    discountPrice: 9.49,
+    images: ["https://images.unsplash.com/photo-1599305090598-fe179d501227?w=500"],
+    categoryName: "Hair Creams",
+    brand: "Carol's Daughter",
+    stock: 65,
+    attributes: { size: ["12oz"], material: "Shea Butter, Aloe Vera" },
+  },
+  {
+    name: "ORS Olive Oil Wrap/Set Mousse",
+    slug: "ors-olive-oil-mousse",
+    description: "Lightweight mousse for wrapping and setting, adds shine without flaking.",
+    price: 6.99,
+    discountPrice: 4.99,
+    images: ["https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=500"],
+    categoryName: "Hair Creams",
+    brand: "ORS",
+    stock: 120,
+    attributes: { size: ["8oz"], material: "Olive Oil, Vitamin E" },
+    isFlashSale: true,
+  },
+
+  // ========== JEWELLERY (6 products) ==========
   {
     name: "Silver Plated Chain Necklace",
     slug: "silver-chain-necklace",
-    description: "Elegant silver plated chain, hypoallergenic, gift box included.",
+    description: "Elegant silver plated chain, hypoallergenic, gift box included, perfect for gifting.",
     price: 24.99,
     discountPrice: 19.99,
-    images: [`${PLACEHOLDER_IMG}11`],
+    images: ["https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500"],
     categoryName: "Jewellery",
     brand: "Pandora",
     stock: 40,
     attributes: { size: ["18 inch"], color: ["Silver"] },
+    isFeatured: true,
   },
   {
     name: "Gold Plated Hoop Earrings",
     slug: "gold-hoop-earrings",
-    description: "Classic hoop earrings, lightweight and durable.",
+    description: "Classic hoop earrings, lightweight and durable, tarnish-resistant finish.",
     price: 19.99,
     discountPrice: 14.99,
-    images: [`${PLACEHOLDER_IMG}12`],
+    images: ["https://images.unsplash.com/photo-1635767798638-3e25273a8236?w=500"],
     categoryName: "Jewellery",
     brand: "Swarovski",
     stock: 60,
     attributes: { size: ["1.5 inch"], color: ["Gold"] },
     isFlashSale: true,
   },
-  // ========== BAGS ==========
+  {
+    name: "Titanium Steel Ring",
+    slug: "titanium-steel-ring",
+    description: "Durable titanium steel ring with brushed finish, scratch-resistant and comfortable.",
+    price: 34.99,
+    discountPrice: 29.99,
+    images: ["https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500"],
+    categoryName: "Jewellery",
+    brand: "Titan",
+    stock: 45,
+    attributes: { size: ["6", "7", "8", "9", "10"], color: ["Silver", "Black", "Rose Gold"] },
+  },
+  {
+    name: "Pearl Drop Earrings",
+    slug: "pearl-drop-earrings",
+    description: "Beautiful freshwater pearl drop earrings, elegant for weddings and special occasions.",
+    price: 29.99,
+    discountPrice: 24.99,
+    images: ["https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500"],
+    categoryName: "Jewellery",
+    brand: "Tiffany & Co",
+    stock: 30,
+    attributes: { size: ["One Size"], color: ["White Pearl", "Silver"] },
+  },
+  {
+    name: "Cubic Zirconia Tennis Bracelet",
+    slug: "cubic-zirconia-bracelet",
+    description: "Sparkling cubic zirconia stones set in silver, adjustable chain for perfect fit.",
+    price: 39.99,
+    discountPrice: 32.99,
+    images: ["https://images.unsplash.com/photo-1617032360309-37055ae3fa3e?w=500"],
+    categoryName: "Jewellery",
+    brand: "Zara",
+    stock: 55,
+    attributes: { size: ["7 inch"], color: ["Silver", "Gold"] },
+    isFeatured: true,
+  },
+  {
+    name: "Men's Leather Bracelet",
+    slug: "mens-leather-bracelet",
+    description: "Braided leather bracelet with magnetic clasp, casual and stylish accessory.",
+    price: 17.99,
+    discountPrice: 12.99,
+    images: ["https://images.unsplash.com/photo-1611070276015-374a3da501b8?w=500"],
+    categoryName: "Jewellery",
+    brand: "Nixon",
+    stock: 70,
+    attributes: { size: ["8 inch", "9 inch"], color: ["Brown", "Black"] },
+    isFlashSale: true,
+  },
+
+  // ========== BAGS (8 products) ==========
   {
     name: "Laptop Backpack (15.6 inch)",
     slug: "laptop-backpack",
-    description: "Water-resistant backpack with padded laptop compartment, USB charging port.",
+    description: "Water-resistant backpack with padded laptop compartment, USB charging port, multiple pockets.",
     price: 49.99,
     discountPrice: 39.99,
-    images: [`${PLACEHOLDER_IMG}13`],
+    images: ["https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500"],
     categoryName: "Bags",
     brand: "Samsonite",
     stock: 75,
-    attributes: { size: ["One Size"], color: ["Black", "Grey"] },
+    attributes: { size: ["One Size"], color: ["Black", "Grey", "Navy"] },
     isFeatured: true,
   },
   {
     name: "Leather Messenger Bag",
     slug: "leather-messenger-bag",
-    description: "Vintage style leather bag, fits tablet and documents, adjustable strap.",
+    description: "Vintage style leather bag, fits tablet and documents, adjustable strap, perfect for work.",
     price: 79.99,
     discountPrice: 59.99,
-    images: [`${PLACEHOLDER_IMG}14`],
+    images: ["https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500"],
     categoryName: "Bags",
     brand: "Fossil",
     stock: 35,
-    attributes: { size: ["One Size"], color: ["Brown", "Black"] },
+    attributes: { size: ["One Size"], color: ["Brown", "Black", "Tan"] },
+    isFlashSale: true,
+  },
+  {
+    name: "Travel Duffel Bag",
+    slug: "travel-duffel-bag",
+    description: "Spacious duffel bag with shoe compartment, shoulder strap, ideal for gym and weekend trips.",
+    price: 59.99,
+    discountPrice: 49.99,
+    images: ["https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500"],
+    categoryName: "Bags",
+    brand: "Adidas",
+    stock: 50,
+    attributes: { size: ["40L", "60L"], color: ["Black", "Red", "Blue"] },
+  },
+  {
+    name: "Handmade Straw Tote Bag",
+    slug: "straw-tote-bag",
+    description: "Handwoven straw tote, perfect for beach, shopping, and summer outings.",
+    price: 34.99,
+    discountPrice: 27.99,
+    images: ["https://images.unsplash.com/photo-1591561954555-60c9d4e97db1?w=500"],
+    categoryName: "Bags",
+    brand: "Kay",
+    stock: 40,
+    attributes: { size: ["One Size"], color: ["Natural", "Black"] },
   },
   {
     name: "Women's Handbag Satchel",
-    slug: "womens-handbag-satchel",
-    description: "Elegant satchel handbag with gold hardware, detachable shoulder strap.",
+    slug: "women-handbag-satchel",
+    description: "Elegant satchel handbag with gold hardware, detachable shoulder strap, multiple compartments.",
     price: 69.99,
     discountPrice: 54.99,
-    images: [`${PLACEHOLDER_IMG}15`],
+    images: ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500"],
     categoryName: "Bags",
     brand: "Michael Kors",
     stock: 30,
-    attributes: { size: ["Medium", "Large"], color: ["Brown", "Black"] },
+    attributes: { size: ["Medium", "Large"], color: ["Brown", "Black", "Red"] },
+    isFeatured: true,
+  },
+  {
+    name: "Kids School Backpack",
+    slug: "kids-school-backpack",
+    description: "Colorful backpack with reinforced stitching, padded straps, perfect for school.",
+    price: 29.99,
+    discountPrice: 24.99,
+    images: ["https://images.unsplash.com/photo-1560769622-6b393f4ea91f?w=500"],
+    categoryName: "Bags",
+    brand: "JanSport",
+    stock: 120,
+    attributes: { size: ["Small"], color: ["Pink", "Blue", "Purple", "Red"] },
+    isFlashSale: true,
   },
   {
     name: "Crossbody Phone Bag",
     slug: "crossbody-phone-bag",
-    description: "Compact crossbody bag that fits phone, cards, and keys.",
+    description: "Compact crossbody bag that fits phone, cards, and keys, perfect for travel and events.",
     price: 19.99,
     discountPrice: 14.99,
-    images: [`${PLACEHOLDER_IMG}16`],
+    images: ["https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500"],
     categoryName: "Bags",
     brand: "Guess",
     stock: 100,
     attributes: { size: ["One Size"], color: ["Black", "White", "Pink"] },
+  },
+  {
+    name: "Rolling Luggage Suitcase",
+    slug: "rolling-luggage-suitcase",
+    description: "Durable hardshell suitcase with 360° spinner wheels, TSA lock, lightweight design.",
+    price: 129.99,
+    discountPrice: 99.99,
+    images: ["https://images.unsplash.com/photo-1565026057447-921f4daa4f09?w=500"],
+    categoryName: "Bags",
+    brand: "American Tourister",
+    stock: 25,
+    attributes: { size: ["20 inch", "24 inch", "28 inch"], color: ["Black", "Navy", "Silver"] },
+    isFeatured: true,
   },
 ];
 
 async function seed() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ Connected to MongoDB");
+    console.log("Connected to MongoDB");
 
+    // Clear existing categories and products
     await Category.deleteMany({});
     await Product.deleteMany({});
-    console.log("🗑️ Deleted existing categories and products");
+    console.log("Cleared existing categories and products");
 
+    // Insert categories
     const createdCategories = await Category.insertMany(categories);
-    console.log(`📁 Created ${createdCategories.length} categories`);
+    console.log(`Created ${createdCategories.length} categories`);
 
+    // Build category map
     const categoryMap = {};
     createdCategories.forEach(cat => { categoryMap[cat.name] = cat._id; });
 
+    // Map products to category ObjectId
     const productsWithCategories = products.map(p => ({
       ...p,
       category: categoryMap[p.categoryName],
     }));
+
+    // Remove temporary categoryName field
     productsWithCategories.forEach(p => delete p.categoryName);
 
+    // Insert products
     await Product.insertMany(productsWithCategories);
-    console.log(`📦 Seeded ${productsWithCategories.length} products`);
+    console.log(`Seeded ${productsWithCategories.length} products`);
 
-    console.log("🎉 Seeding complete!");
+    console.log("✅ Seeding complete!");
+    console.log(`📊 Stats: ${categories.length} categories, ${productsWithCategories.length} products`);
     process.exit(0);
   } catch (err) {
-    console.error("❌ Seeding failed:", err);
+    console.error("Seeding failed:", err);
     process.exit(1);
   }
 }
 
 seed();
+
