@@ -59,15 +59,15 @@ app.use(cookieParser()); // Parse cookies
 
 // Rate limiting to prevent brute force attacks
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 60 * 1000, // 1minutes
+  max: 500, // Limit each IP to 100 requests per windowMs
   message: { success: false, message: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Apply rate limiting to all API routes
-app.use('/api/', limiter);
+app.use('/api/auth', limiter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
