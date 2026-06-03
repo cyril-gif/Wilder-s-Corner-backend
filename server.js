@@ -35,7 +35,8 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'https://wilder-s-corner-frontend.vercel.app',
-    'https://wilder-s-corner-backend.onrender.com'
+    'https://wilder-s-corner-backend.onrender.com',
+    'https://wilder-s-corner-frontend.vercel.app/'  
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
