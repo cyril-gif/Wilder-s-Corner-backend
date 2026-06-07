@@ -34,9 +34,9 @@ app.use(helmet()); // Sets various HTTP headers for security
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://wilder-s-corner-frontend.vercel.app',
+    'https://wilders-corner.vercel.app',
     'https://wilder-s-corner-backend.onrender.com',
-    'https://wilder-s-corner-frontend.vercel.app/'  
+    'https://wilders-corner.vercel.app/'  
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
