@@ -101,7 +101,9 @@ export const getOrderById = async (req, res) => {
 export const updateOrderToPaid = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
-    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
     order.isPaid = true;
     order.paidAt = Date.now();
     order.status = 'processing';
@@ -111,8 +113,9 @@ export const updateOrderToPaid = async (req, res) => {
       email_address: req.body.email_address || '',
     };
     await order.save();
-    res.json({ success: true, message: 'Order paid', data: order });
+    res.json({ success: true, message: 'Order marked as paid', data: order });
   } catch (error) {
+    console.error('Update to paid error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
