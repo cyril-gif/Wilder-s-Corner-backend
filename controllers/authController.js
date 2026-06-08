@@ -95,17 +95,20 @@ export const login = async (req, res) => {
     await user.save();
     
     setAuthCookies(res, accessToken, refreshToken);
+    // In the login function, after creating tokens
+res.json({
+  success: true,
+  message: 'Login successful',
+  data: {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    accessToken,   // ← add this
+    refreshToken,  // ← add this
+  },
+});
     
-    res.json({
-      success: true,
-      message: 'Login successful',
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ success: false, message: 'Server error during login' });
