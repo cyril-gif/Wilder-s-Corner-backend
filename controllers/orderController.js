@@ -119,3 +119,44 @@ export const updateOrderToPaid = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Public track order by ID (no authentication required)
+// @route   GET /api/orders/track/:id
+// @access  Public
+export const publicTrackOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate('orderItems.product', 'name images');
+    
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    
+    // Return only necessary info for tracking
+    res.json({
+      success: true,
+      data: {
+        _id: order._id,
+        status: order.status,
+        createdAt: order.createdAt,
+        estimatedDelivery: order.estimatedDelivery,
+        orderItems: order.orderItems.map(item => ({
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+          image: item.image,
+        })),
+        shippingAddress: {
+          fullName: order.shippingAddress.fullName,
+          addressLine1: order.shippingAddress.addressLine1,
+          city: order.shippingAddress.city,
+          state: order.shippingAddress.state,
+        },
+        totalPrice: order.totalPrice,
+      },
+    });
+  } catch (error) {
+    console.error('Public track order error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
