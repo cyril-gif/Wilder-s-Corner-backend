@@ -25,10 +25,16 @@ export const getProducts = async (req, res) => {
     const filter = {};
 
     // Category filter
-    if (category) {
-      const categoryDoc = await Category.findOne({ slug: category });
-      if (categoryDoc) filter.category = categoryDoc._id;
-    }
+    // Category filter - converts slug to ID
+if (category) {
+  const categoryDoc = await Category.findOne({ slug: category });
+  if (categoryDoc) {
+    filter.category = categoryDoc._id;
+  } else {
+    // If category not found, return empty results
+    return res.json({ success: true, data: { products: [], pagination: {} } });
+  }
+}
 
     // Price range
     if (minPrice || maxPrice) {
