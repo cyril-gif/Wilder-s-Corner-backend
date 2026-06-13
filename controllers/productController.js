@@ -202,6 +202,7 @@ export const searchProducts = async (req, res) => {
 // @desc    Add review to product
 // @route   POST /api/products/:id/reviews
 // @access  Private
+// Add review to product
 export const addReview = async (req, res) => {
   try {
     const { rating, comment } = req.body;
@@ -219,35 +220,37 @@ export const addReview = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
+    // Check if user already reviewed
     const existingReview = await Review.findOne({ user: req.user._id, product: productId });
     if (existingReview) {
-      return res.status(400).json({ success: false, message: 'You already reviewed this product' });
+      return res.status(400).json({ success: false, message: 'You have already reviewed this product' });
     }
 
+    // Create review
     const review = await Review.create({
       user: req.user._id,
       product: productId,
       rating: Number(rating),
-      comment
+      comment,
     });
 
+    // Add to product's reviews array and update rating
     product.reviews.push(review._id);
+    
     // Update average rating
-    if (product.reviews.length === 0) {
-      product.ratings = 0;
-    } else {
-      const total = product.reviews.reduce((sum, r) => sum + r.rating, 0);
-      product.ratings = total / product.reviews.length;
-    }
+    const allReviews = await Review.find({ product: productId });
+    const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+    product.ratings = avgRating;
+    
     await product.save();
 
     res.status(201).json({
       success: true,
-      message: 'Review added',
-      data: review
+      message: 'Review added successfully',
+      data: review,
     });
   } catch (error) {
     console.error('Add review error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
