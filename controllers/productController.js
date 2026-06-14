@@ -211,9 +211,6 @@ export const addReview = async (req, res) => {
     if (!rating || !comment) {
       return res.status(400).json({ success: false, message: 'Rating and comment required' });
     }
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5' });
-    }
 
     const product = await Product.findById(productId);
     if (!product) {
@@ -226,7 +223,7 @@ export const addReview = async (req, res) => {
       return res.status(400).json({ success: false, message: 'You have already reviewed this product' });
     }
 
-    // Create review
+    // Create the review
     const review = await Review.create({
       user: req.user._id,
       product: productId,
@@ -234,12 +231,15 @@ export const addReview = async (req, res) => {
       comment,
     });
 
-    // Add to product's reviews array and update rating
+    // Add the review ID to product's reviews array
     product.reviews.push(review._id);
     
-    // Update average rating
-    const allReviews = await Review.find({ product: productId });
-    const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+    // Recalculate average rating using aggregation
+    const agg = await Review.aggregate([
+      { $match: { product: product._id } },
+      { $group: { _id: null, avgRating: { $avg: '$rating' } } }
+    ]);
+    const avgRating = agg.length > 0 ? agg[0].avgRating : 0;
     product.ratings = avgRating;
     
     await product.save();
