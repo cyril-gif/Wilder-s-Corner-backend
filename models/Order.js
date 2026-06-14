@@ -17,7 +17,7 @@ const shippingAddressSchema = new mongoose.Schema({
   addressLine2: String,
   city: { type: String, required: true },
   state: { type: String, required: true },
-  postalCode: { type: String, required: true },
+  postalCode: { type: String, required: false },
   country: { type: String, required: true, default: 'Ghana' },
 });
 
